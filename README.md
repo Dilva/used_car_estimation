@@ -82,9 +82,16 @@ Le texte des options devait être un champ libre lors de la création des annonc
 ### B. Équilibre des données <a name="IB"></a>
 Aucune variable n’est vraiment équilibrée, de la distribution des marques :
 
+![alt text](https://github.com/Dilva/used_car_estimation/blob/master/images/make_dstb.png "Distribution des marques")
 
  à la répartition des modèles par marque.
+ 
+ ![alt text](https://github.com/Dilva/used_car_estimation/blob/master/images/model_dstb.png "Distribution des modèles chez Renault")
+ 
  Le prix de vente à prédire est aussi très déséquilibré, avec une asymétrie positive autour de 15,000€, et des valeurs extrêmes de 300,000 à 1M€.
+ 
+  ![alt text](https://github.com/Dilva/used_car_estimation/blob/master/images/price_dstb.png "Distribution des prix de vente")
+ 
  Ces distributions représentent la réalité du parc automobile et sont donc conservées dans les données à présenter au modèle. Quelques outliers créent sûrement du bruit, mais leur retrait n’ont pas grandement influencé les performances du modèle. Toutes les données sont conservées pour la suite.
 
 
@@ -96,7 +103,10 @@ On peut ajouter des données afin d’affiner les performances du modèle, comme
 
 L’idée vient de la variété et du grand nombre de marques et modèles. Les prix des véhicules correspondent souvent à un rapport entre la marque et la classe du véhicule, comme deux compacte de marques opposées, ou une berline et une compacte de la même marque.
 
+ ![alt text](https://github.com/Dilva/used_car_estimation/blob/master/images/segment.png "Distribution des modèles chez Renault")
+ 
 Les classes des modèles sont affichées explicitement sur les pages Wikipédia des modèles de véhicule. Pour récupérer les segments de chaque véhicule, on interroge la page Wikipédia de chaque valeur de Marque&modèle unique. La vingtaine de valeurs récupérées peuvent être regroupées en 10 segments suivants :
+
 - micro citadine - mini citadine; - citadine;
 - compactes;
 - grande routières; - SUV
@@ -110,6 +120,8 @@ Chaque segment est ensuite encodé de 0 à 9.
  
 
 De la même manière, on récupère le prix neuf d’un couple Marque&modèle en interrogeant la page de détail du modèle sur autoplus.fr. Par contrainte de temps, le prix ne correspond pas forcément rigoureusement au modèle de la voiture. Il correspond à la moyenne des prix affichés sur le site, s’il est supérieur au prix d’occasion. Sinon, le prix du neuf est estimé par rapport au prix des véhicules neuf de la même marque et du même segment. De cette manière on obtient près de 85% des prix neufs.
+
+ ![alt text](https://github.com/Dilva/used_car_estimation/blob/master/images/prix_neuf.png "Distribution des modèles chez Renault")
 
 Pour ces deux méthodes de scraping, la meilleure page possible a été trouvée par un moteur de recherche, en proposant les mots "[marque] [modèle] wikipédia" et "[marque] [modèle] autoplus prix neuf".
 
@@ -162,6 +174,7 @@ Résoudre ce problème avec un RandomForest devait nous faire arriver rapidement
 En créant un modèle de référence à partir d’un petit nombre de variables, afin d’avoir un score à améliorer, on obtient toujours une MAPE de près de 60% par cross validation. Le score ne s’améliore pas même après l’essai de différentes méthodes : suppression des valeurs extrêmes, normalisation des données, changement des encodages, suppression de certaines variables, changement de modèles.
 
  Résultats de la première cross-validation :
+  ![alt text](https://github.com/Dilva/used_car_estimation/blob/master/images/cv_1.png "Distribution des modèles chez Renault")
 
  En observant les résultats de chaque fold de la cross- validation, certains segments de données produisent une MAPE de ~10%, quand d’autres atteignent 200%. Pourtant, la MAE varie très peu. En échangeant la répartition des données d’entrainement, on peut obtenir 4 folds à 10% de MAPE, avant le dernier à 600%.
 
@@ -173,11 +186,14 @@ En se concentrant uniquement sur les résultats du jeu de test, on peut ne pas o
 
 
  Il suffit par exemple de fixer le tirage des données sur un échantillon avantageux pour obtenir une bonne MAPE.
+ 
 - Ici, avec un random state à 40 :
 
+ ![alt text](https://github.com/Dilva/used_car_estimation/blob/master/images/res_1.png "Distribution des modèles chez Renault")
 
 - random state à 0 :
 
+ ![alt text](https://github.com/Dilva/used_car_estimation/blob/master/images/res_2.png "Distribution des modèles chez Renault")
 
  La MAPE seule n’est donc pas une mesure suffisante de la performance du modèle sur un échantillon de test. Mais, pour l’évaluation des traitements de données on se concentre sur ce dernier résultat, en prenant en compte MAPE et MAE. Le score de référence est donc :
 **MAPE : 9.54% et MAE : 1721.08.**
@@ -186,7 +202,11 @@ En se concentrant uniquement sur les résultats du jeu de test, on peut ne pas o
 
 Au fil de l’étude des données, on calcul la corrélation entre les nouvelles variables et la variable de prix de vente à prédire. Mais ces valeurs ne donnent pas beaucoup d’informations sur comment apprend le modèle.
 
+ ![alt text](https://github.com/Dilva/used_car_estimation/blob/master/images/corr.png "Distribution des modèles chez Renault")
+
  En affichant les scores Gini calculés par la forêt aléatoire, on observe une diminution de l’importance des variables, suivant l’ordre de traitement du modèle. Cela explique le très bon score du modèle de référence, ainsi que la difficulté d’affiner le résultat. Le modèle apprend très vite dès les premières études de features. Les prochaines variables sont ensuite importantes pour l’optimisation du modèle, mais celui ci ne les considère plus comme importante.
+
+ ![alt text](https://github.com/Dilva/used_car_estimation/blob/master/images/feature_importances.png "Distribution des modèles chez Renault")
 
 #### C. Résultats des traitements de données <a name="IIIC"></a>
  
@@ -209,5 +229,8 @@ L’ajout des prix du neufs, bien que peu rigoureux apporte la seconde meilleure
 En utilisant le meilleur nombre d’arbres indiqué par la GridSearch (150 arbres), on note une infime amélioration : **MAPE : 8.96%, MAE : 1666.78.**
 
 Finalement, **la mesure MAPE globale a progressé de 58% à 34%, avec le meilleur échantillon d'entrainement à 8.85%. La MAE est passée de 1704 à 1656.**
+
+
+ ![alt text](https://github.com/Dilva/used_car_estimation/blob/master/images/cv_2.png "Distribution des modèles chez Renault")
 
 Le modèle généralise bien mieux ces prédictions. Comparer ces deux mesures permet d'avoir une idée correcte de la performance du modèle. **Une MAE de 1656 sur des prix de véhicules pouvant aller de 5,000 à plus de 300,000€ est un bon score, notamment avec une MAPE à 34%.**
