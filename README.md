@@ -5,10 +5,12 @@ L’objectif est de prédire le prix de véhicules d’occasion à partir d’un
 - la marque du véhicule;
 - le modèle;
 - son année d’édition;
-- la date de mise en ligne de l’annonce; - le kilométrage;
+- la date de mise en ligne de l’annonce; 
+- le kilométrage;
 - la boîte de vitesse;
 - la motorisation;
-- une description du modèle avec sa version et ses options; - et le prix de vente, à prédire.
+- une description du modèle avec sa version et ses options; 
+- et le prix de vente, à prédire.
 
 Les différents traitements de données ainsi que les études de modèles sont effectués dans un Jupyter notebook, disponible dans ce dossier Github.
 
